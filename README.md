@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FindSeat
 
-## Getting Started
+FindSeat adalah aplikasi web untuk membantu pengguna mencari tempat duduk yang tersedia di fasilitas umum, seperti perpustakaan, ruang belajar bersama, dan coworking space.
 
-First, run the development server:
+Pengguna dapat melihat daftar tempat, memeriksa denah tempat duduk, memilih kursi yang tersedia, dan melakukan simulasi check-in.
+
+## Fitur
+
+- **Daftar tempat:** menampilkan lokasi, kategori, dan informasi tempat.
+- **Pencarian tempat:** mencari tempat berdasarkan informasi yang tersedia.
+- **Denah kursi:** menampilkan status kursi tersedia, digunakan, dan ditinggalkan.
+- **Pemilihan kursi:** memilih kursi yang masih tersedia.
+- **Formulir check-in:** memvalidasi data pengguna sebelum menampilkan pesan simulasi check-in.
+- **Desain responsif:** mendukung tampilan mobile, tablet, dan desktop.
+
+## Teknologi
+
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+
+## Persyaratan
+
+- Node.js yang kompatibel dengan versi Next.js proyek ini.
+- npm.
+
+## Instalasi dan Menjalankan Aplikasi
+
+1. Clone repository:
+
+   ```bash
+   https://github.com/mrizkiruswan-lab/105224018-FindSeat.git
+   ```
+
+2. Masuk ke folder proyek:
+
+   ```bash
+   cd findseat-web
+   ```
+
+3. Instal dependensi:
+
+   ```bash
+   npm install
+   ```
+
+4. Jalankan server pengembangan:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Buka `http://localhost:3000` di browser.
+
+## Pemeriksaan Kualitas
+
+Jalankan ESLint:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Jalankan production build:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pengujian manual dilakukan pada fitur pencarian tempat, pemilihan kursi, validasi formulir, dan tampilan responsif. Audit Lighthouse Accessibility juga dilakukan dengan hasil yang memenuhi target minimal 85.
 
-## Learn More
+## Batasan Versi 0.1
 
-To learn more about Next.js, take a look at the following resources:
+FindSeat pada versi ini menggunakan data simulasi. Check-in belum terhubung ke backend atau basis data. Status kursi belum diperbarui secara real-time, sedangkan fitur temporary leave dan auto release belum diimplementasikan.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Pengembangan Berikutnya
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Integrasi backend dan basis data.
+- Pembaruan status kursi secara real-time.
+- Fitur temporary leave dan auto release.
+- Pengelolaan check-in dan check-out pengguna.
 
-## Deploy on Vercel
+## Pengembang
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Nama: M Rizki Ruswan (105224018)
+Program Studi: Ilmu Komputer
+Universitas: Universitas Pertamina
