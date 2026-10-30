@@ -1,6 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
+import {
+  checkInSchema,
+  type CheckInFormData,
+} from "@/schema/check-in";
 
 type CheckInFormProps = {
   seatNumber: number;
@@ -13,23 +18,34 @@ export default function CheckInForm({
 }: CheckInFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CheckInFormData, string>>
+  >({});
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const cleanName = name.trim();
-    const cleanEmail = email.trim();
+    const result = checkInSchema.safeParse({ name, email });
 
-    if (!cleanName || !cleanEmail) {
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+
+      setErrors({
+        name: fieldErrors.name?.[0],
+        email: fieldErrors.email?.[0],
+      });
+
       return;
     }
 
-    onSubmit(cleanName, cleanEmail);
+    setErrors({});
+    onSubmit(result.data.name, result.data.email);
   }
 
   return (
     <form
       onSubmit={handleSubmit}
+      noValidate
       className="rounded-2xl border border-[#dce8e2] bg-white p-5 sm:p-6"
     >
       <h2 className="text-xl font-bold text-[#163b32]">
@@ -57,14 +73,27 @@ export default function CheckInForm({
           name="name"
           type="text"
           autoComplete="name"
-          required
-          minLength={2}
           maxLength={80}
           value={name}
-          onChange={(event) => setName(event.target.value)}
+          onChange={(event) => {
+            setName(event.target.value);
+            setErrors((current) => ({ ...current, name: undefined }));
+          }}
+          aria-invalid={Boolean(errors.name)}
+          aria-describedby={errors.name ? "checkin-name-error" : undefined}
           placeholder="Masukkan nama lengkap"
           className="min-h-12 w-full rounded-xl border border-[#dce8e2] px-4 text-[#163b32] focus:border-[#147d64] focus:outline-none focus:ring-2 focus:ring-[#147d64]/20"
         />
+
+        {errors.name && (
+          <p
+            id="checkin-name-error"
+            role="alert"
+            className="mt-2 text-sm text-red-600"
+          >
+            {errors.name}
+          </p>
+        )}
       </div>
 
       <div className="mt-4">
@@ -80,13 +109,27 @@ export default function CheckInForm({
           name="email"
           type="email"
           autoComplete="email"
-          required
           maxLength={254}
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) => {
+            setEmail(event.target.value);
+            setErrors((current) => ({ ...current, email: undefined }));
+          }}
+          aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "checkin-email-error" : undefined}
           placeholder="nama@email.com"
           className="min-h-12 w-full rounded-xl border border-[#dce8e2] px-4 text-[#163b32] focus:border-[#147d64] focus:outline-none focus:ring-2 focus:ring-[#147d64]/20"
         />
+
+        {errors.email && (
+          <p
+            id="checkin-email-error"
+            role="alert"
+            className="mt-2 text-sm text-red-600"
+          >
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <button
