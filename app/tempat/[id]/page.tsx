@@ -1,25 +1,50 @@
-
+import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { venues } from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
 import DetailTempatClient from "./DetailTempatClient";
 
 export const instant = false;
-
-export function generateStaticParams() {
-  return venues.map((venue) => ({ id: venue.id }));
-}
 
 export default async function DetailTempatPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const venueExists = venues.some((venue) => venue.id === id);
+  await connection();
 
-  if (!venueExists) {
+  const { id } = await params;
+
+  const venue = await prisma.venue.findUnique({
+    where: {
+      slug: id,
+    },
+    include: {
+      seats: {
+        orderBy: {
+          number: "asc",
+        },
+      },
+    },
+  });
+
+  if (!venue) {
     notFound();
   }
 
-  return <DetailTempatClient id={id} />;
+  const venueData = {
+    id: venue.id,
+    slug: venue.slug,
+    name: venue.name,
+    category: venue.category,
+    location: venue.location,
+    description: venue.description,
+    totalSeats: venue.seats.length,
+    seats: venue.seats.map((seat) => ({
+      id: String(seat.id),
+      number: seat.number,
+      status: seat.status,
+    })),
+  };
+
+  return <DetailTempatClient venue={venueData} />;
 }

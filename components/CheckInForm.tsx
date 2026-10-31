@@ -2,33 +2,45 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   checkInSchema,
   type CheckInFormData,
 } from "@/schema/check-in";
+import { createCheckIn } from "@/app/tempat/[id]/actions";
 
 type CheckInFormProps = {
+  seatId: number;
   seatNumber: number;
-  onSubmit: (name: string, email: string) => void;
 };
 
 export default function CheckInForm({
+  seatId,
   seatNumber,
-  onSubmit,
 }: CheckInFormProps) {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<
     Partial<Record<keyof CheckInFormData, string>>
   >({});
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
-    const result = checkInSchema.safeParse({ name, email });
+    const validation = checkInSchema.safeParse({
+      name,
+      email,
+    });
 
-    if (!result.success) {
-      const fieldErrors = result.error.flatten().fieldErrors;
+    if (!validation.success) {
+      const fieldErrors = validation.error.flatten().fieldErrors;
 
       setErrors({
         name: fieldErrors.name?.[0],
@@ -39,7 +51,31 @@ export default function CheckInForm({
     }
 
     setErrors({});
-    onSubmit(result.data.name, result.data.email);
+    setMessage("");
+    setIsSubmitting(true);
+    setIsSuccess(false);
+
+    try {
+      const result = await createCheckIn({
+        seatId,
+        name: validation.data.name,
+        email: validation.data.email,
+      });
+
+      setMessage(result.message);
+      setIsSuccess(result.success);
+
+      if (result.success) {
+        setName("");
+        setEmail("");
+        router.refresh();
+      }
+    } catch {
+      setMessage("Terjadi kesalahan saat mengirim check-in.");
+      setIsSuccess(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -57,7 +93,7 @@ export default function CheckInForm({
         <span className="font-bold text-[#147d64]">
           {String(seatNumber).padStart(2, "0")}
         </span>
-        . Isi data berikut untuk menyimulasikan proses check-in.
+        . Isi data berikut untuk melakukan check-in.
       </p>
 
       <div className="mt-5">
@@ -77,20 +113,18 @@ export default function CheckInForm({
           value={name}
           onChange={(event) => {
             setName(event.target.value);
-            setErrors((current) => ({ ...current, name: undefined }));
+            setErrors((current) => ({
+              ...current,
+              name: undefined,
+            }));
           }}
           aria-invalid={Boolean(errors.name)}
-          aria-describedby={errors.name ? "checkin-name-error" : undefined}
           placeholder="Masukkan nama lengkap"
           className="min-h-12 w-full rounded-xl border border-[#dce8e2] px-4 text-[#163b32] focus:border-[#147d64] focus:outline-none focus:ring-2 focus:ring-[#147d64]/20"
         />
 
         {errors.name && (
-          <p
-            id="checkin-name-error"
-            role="alert"
-            className="mt-2 text-sm text-red-600"
-          >
+          <p className="mt-2 text-sm text-red-600" role="alert">
             {errors.name}
           </p>
         )}
@@ -113,20 +147,18 @@ export default function CheckInForm({
           value={email}
           onChange={(event) => {
             setEmail(event.target.value);
-            setErrors((current) => ({ ...current, email: undefined }));
+            setErrors((current) => ({
+              ...current,
+              email: undefined,
+            }));
           }}
           aria-invalid={Boolean(errors.email)}
-          aria-describedby={errors.email ? "checkin-email-error" : undefined}
           placeholder="nama@email.com"
           className="min-h-12 w-full rounded-xl border border-[#dce8e2] px-4 text-[#163b32] focus:border-[#147d64] focus:outline-none focus:ring-2 focus:ring-[#147d64]/20"
         />
 
         {errors.email && (
-          <p
-            id="checkin-email-error"
-            role="alert"
-            className="mt-2 text-sm text-red-600"
-          >
+          <p className="mt-2 text-sm text-red-600" role="alert">
             {errors.email}
           </p>
         )}
@@ -134,14 +166,27 @@ export default function CheckInForm({
 
       <button
         type="submit"
-        className="mt-6 min-h-12 w-full rounded-xl bg-[#147d64] px-5 py-3 font-semibold text-white transition hover:bg-[#0b5b49]"
+        disabled={isSubmitting}
+        className="mt-6 min-h-12 w-full rounded-xl bg-[#147d64] px-5 py-3 font-semibold text-white transition hover:bg-[#0b5b49] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Konfirmasi Check-in
+        {isSubmitting ? "Menyimpan..." : "Konfirmasi Check-in"}
       </button>
 
+      {message && (
+        <p
+          role="status"
+          className={`mt-4 rounded-xl p-3 text-sm ${
+            isSuccess
+              ? "bg-green-50 text-green-700"
+              : "bg-red-50 text-red-700"
+          }`}
+        >
+          {message}
+        </p>
+      )}
+
       <p className="mt-3 text-xs leading-5 text-[#61736d]">
-        Formulir ini hanya demonstrasi antarmuka. Data belum dikirim ke
-        server atau disimpan ke database.
+        Data check-in akan disimpan ke database PostgreSQL.
       </p>
     </form>
   );

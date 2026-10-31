@@ -1,0 +1,54 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SeatStatus {
+  tersedia
+  digunakan
+  ditinggalkan
+}
+
+model Venue {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  category    String
+  location    String
+  description String
+  createdAt   DateTime @default(now())
+
+  seats       Seat[]
+}
+
+model Seat {
+  id        Int        @id @default(autoincrement())
+  number    Int
+  status    SeatStatus @default(tersedia)
+  venueId   Int
+  createdAt DateTime   @default(now())
+
+  venue     Venue      @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  checkIns  CheckIn[]
+
+  @@unique([venueId, number])
+}
+
+model CheckIn {
+  id          Int       @id @default(autoincrement())
+  name        String
+  email       String
+  seatId      Int
+  checkedInAt DateTime  @default(now())
+  checkedOutAt DateTime?
+
+  seat        Seat      @relation(fields: [seatId], references: [id], onDelete: Restrict)
+
+  @@index([seatId, checkedInAt])
+  @@index([email])
+}
