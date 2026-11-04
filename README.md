@@ -2,7 +2,16 @@
 
 FindSeat adalah aplikasi web untuk membantu pengguna mencari tempat duduk yang tersedia di fasilitas umum, seperti perpustakaan, ruang belajar bersama, dan coworking space.
 
-Pengguna dapat melihat daftar tempat, memeriksa denah tempat duduk, memilih kursi yang tersedia, dan melakukan simulasi check-in. Pada pengembangan keamanan, FindSeat juga memiliki komponen kriptografi awal untuk melindungi data sensitif menggunakan algoritma AES-256-GCM.
+Pengguna dapat melihat daftar tempat, memeriksa denah tempat duduk, memilih kursi yang tersedia, dan melakukan check-in. Pada pengembangan Milestone 2, FindSeat telah dilengkapi dengan backend dan database PostgreSQL sehingga pengelolaan data tempat, kursi, dan check-in dapat dilakukan secara persisten.
+
+FindSeat dikembangkan secara bertahap mulai dari Milestone 1 (v0.1) hingga Milestone 2 (v0.2).
+
+## Versi Produk
+
+| Versi | Perkembangan |
+|---|---|
+| v0.1 | Pengembangan antarmuka web responsif, daftar tempat, denah kursi, dan simulasi check-in. |
+| v0.2 | Integrasi logika server, PostgreSQL, Prisma ORM 7, CRUD Venue dan Seat, serta validasi server menggunakan Zod. |
 
 ## Fitur
 
@@ -10,55 +19,190 @@ Pengguna dapat melihat daftar tempat, memeriksa denah tempat duduk, memilih kurs
 - **Pencarian tempat:** mencari tempat berdasarkan informasi yang tersedia.
 - **Denah kursi:** menampilkan status kursi tersedia, digunakan, dan ditinggalkan.
 - **Pemilihan kursi:** memilih kursi yang masih tersedia.
-- **Formulir check-in:** memvalidasi data pengguna sebelum menampilkan pesan simulasi check-in.
+- **Check-in:** memproses check-in dan menyimpan catatan ke database.
+- **CRUD Venue:** menambahkan, menampilkan, mengubah, dan menghapus data tempat.
+- **CRUD Seat:** menambahkan, menampilkan, mengubah, dan menghapus data kursi.
+- **Validasi server:** memvalidasi masukan menggunakan Zod sebelum diproses atau disimpan.
+- **Relasi database:** menghubungkan Venue dengan Seat serta Seat dengan CheckIn.
+- **Transaksi database:** menjaga konsistensi data ketika proses check-in berlangsung.
 - **Desain responsif:** mendukung tampilan mobile, tablet, dan desktop.
 - **Komponen kriptografi:** menyediakan fungsi enkripsi dan dekripsi data menggunakan AES-256-GCM, termasuk pemeriksaan integritas data.
 
 ## Teknologi
 
-- Next.js
-- React
+- Next.js 16 dengan App Router
+- React 19
 - TypeScript
 - Tailwind CSS
+- PostgreSQL 18
+- Prisma ORM 7
+- Zod
 - Node.js `crypto` untuk komponen AES-256-GCM
-- `tsx` untuk menjalankan pengujian otomatis TypeScript
+- `tsx` untuk menjalankan script dan pengujian TypeScript
 
 ## Persyaratan
 
-- Node.js yang kompatibel dengan versi Next.js proyek ini.
+- Node.js yang kompatibel dengan versi proyek.
 - npm.
+- PostgreSQL.
+- pgAdmin 4 (opsional, untuk pengelolaan database).
 
 ## Instalasi dan Menjalankan Aplikasi
 
-1. Clone repository:
+### 1. Clone Repository
 
-   ```bash
-   git clone https://github.com/mrizkiruswan-lab/105224018-FindSeat.git
-   ```
+```bash
+git clone https://github.com/mrizkiruswan-lab/105224018-FindSeat.git
+```
 
-2. Masuk ke folder proyek:
+### 2. Masuk ke Folder Proyek
 
-   ```bash
-   cd 105224018-FindSeat
-   ```
+```bash
+cd 105224018-FindSeat
+```
 
-3. Instal dependensi:
+### 3. Instal Dependensi
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-4. Jalankan server pengembangan:
+### 4. Konfigurasi Environment
 
-   ```bash
-   npm run dev
-   ```
+Buat file `.env` berdasarkan contoh konfigurasi:
 
-5. Buka `http://localhost:3000` di browser.
+```bash
+cp .env.example .env
+```
+
+Sesuaikan `DATABASE_URL` dengan konfigurasi PostgreSQL lokal.
+
+Contoh format:
+
+```env
+DATABASE_URL="postgresql://USERNAME:PASSWORD@localhost:5432/findseat_db?schema=public"
+FINDSEAT_ENCRYPTION_KEY="BASE64_32_BYTE_SECRET_KEY"
+```
+
+Ganti placeholder dengan konfigurasi lokal yang sesuai. Jangan mengunggah file `.env` atau kredensial sebenarnya ke repository.
+
+### 5. Membuat Database
+
+Buat database PostgreSQL dengan nama:
+
+```text
+findseat_db
+```
+
+### 6. Menjalankan Prisma Generate
+
+```bash
+npx prisma generate
+```
+
+Perintah tersebut digunakan untuk menghasilkan Prisma Client berdasarkan schema proyek.
+
+### 7. Menjalankan Migration
+
+```bash
+npx prisma migrate dev
+```
+
+Perintah ini menerapkan migration yang tersedia pada database pengembangan.
+
+### 8. Menjalankan Seed Data
+
+```bash
+npx prisma db seed
+```
+
+Perintah ini mengisi database dengan data sintetis yang telah disiapkan pada `prisma/seed.ts`.
+
+Data awal terdiri dari tiga venue dan 74 kursi.
+
+### 9. Menjalankan Aplikasi
+
+```bash
+npm run dev
+```
+
+Buka aplikasi melalui:
+
+```text
+http://localhost:3000
+```
+
+## Implementasi Backend dan Database
+
+Pada Milestone 2 (v0.2), FindSeat menggunakan PostgreSQL sebagai penyimpanan data dan Prisma ORM 7 untuk mengelola interaksi antara aplikasi dan database.
+
+### Struktur Database
+
+Database FindSeat memiliki tiga model utama:
+
+| Model | Fungsi |
+|---|---|
+| Venue | Menyimpan informasi tempat atau lokasi. |
+| Seat | Menyimpan nomor, status, dan relasi kursi ke tempat. |
+| CheckIn | Menyimpan catatan pengguna yang melakukan check-in. |
+
+### Relasi Antartabel
+
+- **Venue – Seat:** satu venue dapat memiliki banyak kursi (one-to-many).
+- **Seat – CheckIn:** satu kursi dapat memiliki banyak catatan check-in (one-to-many).
+
+Relasi menggunakan foreign key untuk menjaga konsistensi data. Penghapusan data yang masih memiliki relasi tertentu dibatasi menggunakan aturan `onDelete: Restrict`.
+
+### Implementasi CRUD
+
+Operasi CRUD telah diintegrasikan ke dalam antarmuka aplikasi.
+
+**CRUD Venue**
+
+- Create: menambahkan data venue.
+- Read: menampilkan daftar venue dan informasi terkait.
+- Update: memperbarui informasi venue.
+- Delete: menghapus venue sesuai aturan relasi database.
+
+**CRUD Seat**
+
+- Create: menambahkan kursi pada venue.
+- Read: menampilkan data kursi.
+- Update: memperbarui nomor atau status kursi.
+- Delete: menghapus kursi sesuai aturan relasi database.
+
+### Server Actions dan Validasi
+
+Server Actions digunakan untuk memproses operasi pengelolaan data dari sisi server.
+
+Validasi masukan menggunakan Zod untuk memastikan data memenuhi ketentuan sebelum diproses atau disimpan.
+
+Validasi mencakup:
+
+- Kelengkapan informasi venue.
+- Format dan nilai masukan.
+- Nomor kursi berupa bilangan bulat positif.
+- Pemilihan venue yang tersedia.
+- Status kursi sesuai enum yang ditentukan.
+- Keunikan kombinasi nomor kursi dan venue.
+
+### Integrasi Check-In
+
+Proses check-in menggunakan Server Action dan transaksi database.
+
+Tahapan proses:
+
+1. Sistem mencari kursi berdasarkan ID.
+2. Sistem memeriksa keberadaan dan status kursi.
+3. Sistem membuat catatan check-in.
+4. Sistem memperbarui status kursi menjadi `digunakan`.
+5. Sistem memperbarui halaman terkait menggunakan `revalidatePath`.
+
+Transaksi digunakan agar perubahan catatan check-in dan status kursi tetap konsisten.
 
 ## Kebutuhan Kriptografi
 
-Komponen kriptografi awal FindSeat dirancang untuk melindungi data sensitif yang dipilih untuk dienkripsi. Tidak semua data perlu dienkripsi; pemilihan kontrol disesuaikan dengan kebutuhan keamanan data.
+Komponen kriptografi FindSeat dirancang untuk melindungi data sensitif yang dipilih untuk dienkripsi. Tidak semua data perlu dienkripsi; pemilihan kontrol disesuaikan dengan kebutuhan keamanan data.
 
 | Data | Tujuan keamanan | Prioritas |
 |---|---|---|
@@ -85,7 +229,7 @@ Komponen kriptografi FindSeat menggunakan AES-256-GCM dari modul `node:crypto` b
 
 ### Keluaran
 
-Komponen menghasilkan payload JSON dengan struktur berikut:
+Komponen menghasilkan payload JSON yang memuat:
 
 - `version`: versi format payload.
 - `algorithm`: algoritma yang digunakan.
@@ -99,7 +243,9 @@ Saat dekripsi, komponen memvalidasi struktur payload dan authentication tag. Jik
 
 IV dibuat menggunakan `randomBytes` dari modul `node:crypto`, yang menggunakan sumber keacakan kriptografis dari runtime dan sistem operasi.
 
-Kunci enkripsi dibaca dari environment variable `FINDSEAT_ENCRYPTION_KEY`, berupa Base64 yang merepresentasikan tepat 32 byte. Kunci harus disimpan secara aman dan tidak boleh ditulis langsung di source code atau dimasukkan ke repository publik.
+Kunci enkripsi dibaca dari environment variable `FINDSEAT_ENCRYPTION_KEY`, berupa Base64 yang merepresentasikan tepat 32 byte.
+
+Kunci harus disimpan secara aman dan tidak boleh ditulis langsung di source code atau dimasukkan ke repository publik.
 
 Komponen ini hanya digunakan di sisi server. Kunci tidak boleh dikirim ke browser atau diimpor ke Client Component.
 
@@ -107,7 +253,7 @@ Dokumentasi rancangan lengkap tersedia pada [`docs/security/crypto-design.md`](d
 
 ## Pengujian Otomatis Kriptografi
 
-Pengujian menggunakan data sintetis dan kunci acak sementara. Pengujian tidak memerlukan kunci dari `.env.local`.
+Pengujian menggunakan data sintetis dan kunci acak sementara.
 
 Jalankan pengujian:
 
@@ -124,9 +270,15 @@ Skenario pengujian meliputi:
 5. **Validasi panjang kunci:** kunci dengan panjang selain 32 byte ditolak.
 6. **Payload tidak valid:** JSON yang rusak ditolak.
 
-Hasil pengujian harus diverifikasi melalui keluaran terminal sebelum dilaporkan sebagai berhasil.
+Komponen kriptografi ini masih merupakan implementasi awal yang belum terintegrasi otomatis dengan penyimpanan data aplikasi.
 
 ## Pemeriksaan Kualitas
+
+Jalankan pemeriksaan TypeScript:
+
+```bash
+npx tsc --noEmit
+```
 
 Jalankan ESLint:
 
@@ -146,33 +298,68 @@ Jalankan pengujian kriptografi:
 npm run test:crypto
 ```
 
-Pengujian manual sebelumnya mencakup fitur pencarian tempat, pemilihan kursi, validasi formulir, dan tampilan responsif. Audit Lighthouse Accessibility juga telah dilakukan dengan hasil yang memenuhi target minimal 85.
+Pengujian aplikasi juga mencakup pengelolaan Venue dan Seat, integrasi database, check-in, pembatasan penghapusan berdasarkan relasi, dan rollback transaksi.
 
-## Batasan Versi 0.1
+## Dokumentasi dan Bukti Implementasi
 
-FindSeat menggunakan data simulasi. Check-in belum terhubung ke backend atau basis data, dan status kursi belum diperbarui secara real-time. Fitur temporary leave dan auto release juga belum diimplementasikan.
+Dokumentasi praktikum dan bukti pengerjaan tersedia pada direktori `docs/praktikum/`.
 
-Komponen AES-256-GCM merupakan implementasi kriptografi awal yang dapat dijalankan dan diuji secara mandiri. Komponen ini belum terintegrasi otomatis dengan penyimpanan data aplikasi atau basis data FindSeat.
+Dokumentasi yang tersedia:
 
-Enkripsi AES-256-GCM tidak menggantikan autentikasi, otorisasi, HTTPS/TLS, atau password hashing. Data password harus dilindungi menggunakan algoritma password hashing yang sesuai, bukan enkripsi reversibel.
+- [`docs/praktikum/modul-06.md`](docs/praktikum/modul-06.md)
+
+Bukti implementasi tersimpan pada:
+
+```text
+docs/praktikum/evidence/
+```
+
+Screenshot tersebut mencakup:
+
+- Konfigurasi database PostgreSQL.
+- Prisma Studio dan migration.
+- Create, Update, dan Delete Venue.
+- Create, Update, dan Delete Seat.
+- Check-in.
+- Pembatasan penghapusan berdasarkan relasi.
+- Pengujian rollback transaksi.
+
+Bukti antarmuka Milestone 1 juga tersedia pada direktori `docs/bukti/`.
+
+## Batasan Produk v0.2
+
+Pada versi ini, FindSeat telah memiliki integrasi database dan pengelolaan data melalui CRUD serta Server Actions.
+
+Namun, beberapa pengembangan lanjutan masih diperlukan:
+
+- Autentikasi dan otorisasi pengguna belum diimplementasikan.
+- Halaman administrasi masih digunakan untuk pengujian lokal dan belum dilindungi autentikasi admin.
+- Pembaruan status kursi belum menggunakan mekanisme real-time.
+- Fitur temporary leave dan auto release belum diimplementasikan.
+- Komponen AES-256-GCM belum terintegrasi otomatis dengan penyimpanan data aplikasi atau database.
+
+Aplikasi tidak boleh dipublikasikan sebagai layanan administrasi publik sebelum pengamanan akses diterapkan.
 
 ## Pengembangan Berikutnya
 
-- Integrasi backend dan basis data.
+- Implementasi autentikasi dan otorisasi pengguna.
+- Penguatan keamanan akses administrasi.
 - Pembaruan status kursi secara real-time.
-- Implementasi fitur temporary leave dan auto release.
-- Pengelolaan check-in dan check-out pengguna.
-- Integrasi komponen kriptografi dengan penyimpanan data yang memang membutuhkan perlindungan.
+- Implementasi temporary leave dan auto release.
+- Penyempurnaan pengelolaan check-in dan check-out.
+- Integrasi komponen kriptografi dengan penyimpanan data yang membutuhkan perlindungan.
 - Pengelolaan kunci yang aman, termasuk rotasi kunci dan prosedur pemulihan.
 
 ## Pengembang
 
-- **Nama:** M Rizki Ruswan (105224018)
+- **Nama:** M. Rizki Ruswan (105224018)
 - **Program Studi:** Ilmu Komputer
 - **Universitas:** Universitas Pertamina
 
 ## Catatan Penggunaan AI
 
-Penggunaan AI dalam pengembangan FindSeat dicatat pada [`AI_LOG.md`](AI_LOG.md). Catatan tersebut mencakup bantuan untuk threat modeling, analisis risiko, rancangan kriptografi, implementasi, dokumentasi, dan pengujian.
+Penggunaan AI dalam pengembangan FindSeat dicatat pada [`docs/security/AI_LOG.md`](docs/security/AI_LOG.md).
+
+Catatan tersebut mencakup bantuan untuk threat modeling, analisis risiko, rancangan kriptografi, implementasi, dokumentasi, dan pengujian.
 
 Seluruh implementasi harus diperiksa dan dipahami oleh pengembang sebelum dikumpulkan.
