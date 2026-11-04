@@ -37,3 +37,15 @@ test("5. panjang kunci yang salah ditolak (uji batas)", () => {
 test("6. JSON payload rusak ditolak", () => {
   assert.throws(() => decryptSensitiveData("{rusak", key), /bukan JSON yang valid/);
 });
+
+test("7. authentication tag yang dimodifikasi ditolak", () => {
+  const p = JSON.parse(encryptSensitiveData("data sintetis", key));
+
+  const firstChar = p.tag[0];
+  p.tag = (firstChar === "A" ? "B" : "A") + p.tag.slice(1);
+
+  assert.throws(
+    () => decryptSensitiveData(JSON.stringify(p), key),
+    /gagal didekripsi|tidak valid/
+  );
+});
