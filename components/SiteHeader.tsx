@@ -1,6 +1,8 @@
+
 import Link from "next/link";
 import { Suspense } from "react";
 import TautanNav from "@/components/TautanNav";
+import HeaderAuth from "@/components/HeaderAuth";
 
 export default function SiteHeader() {
   return (
@@ -25,23 +27,27 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-        <Suspense
-          fallback={
-            <nav aria-label="Navigasi utama" className="flex gap-2 sm:gap-4">
-              <Link href="/" className="rounded-xl px-3 py-3 text-sm">
-                Beranda
-              </Link>
-              <Link href="/tempat" className="rounded-xl px-3 py-3 text-sm">
-                Cari Tempat
-              </Link>
-              <Link href="/tentang" className="rounded-xl px-3 py-3 text-sm">
-                Tentang
-              </Link>
-            </nav>
-          }
-        >
-          <TautanNav />
-        </Suspense>
+        <div className="flex items-center gap-3">
+          <Suspense
+            fallback={
+              <nav aria-label="Navigasi utama" className="flex gap-2 sm:gap-4">
+                <Link href="/" className="rounded-xl px-3 py-3 text-sm">
+                  Beranda
+                </Link>
+                <Link href="/tempat" className="rounded-xl px-3 py-3 text-sm">
+                  Cari Tempat
+                </Link>
+                <Link href="/tentang" className="rounded-xl px-3 py-3 text-sm">
+                  Tentang
+                </Link>
+              </nav>
+            }
+          >
+            <TautanNav />
+          </Suspense>
+
+          <HeaderAuth />
+        </div>
       </div>
     </header>
   );

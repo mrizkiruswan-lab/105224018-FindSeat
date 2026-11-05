@@ -1,7 +1,9 @@
+
 "use server";
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth/authorization";
 import {
   seatSchema,
   seatIdSchema,
@@ -34,6 +36,8 @@ function refreshPages() {
 export async function createSeat(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const validation = seatSchema.safeParse({
     venueId: formData.get("venueId"),
     number: formData.get("number"),
@@ -91,6 +95,8 @@ export async function createSeat(
 export async function updateSeat(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const idValidation = seatIdSchema.safeParse(
     formData.get("id")
   );
@@ -156,6 +162,8 @@ export async function updateSeat(
 export async function deleteSeat(
   formData: FormData
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const idValidation = seatIdSchema.safeParse(
     formData.get("id")
   );
