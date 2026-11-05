@@ -3,6 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth/authorization";
 import {
   venueSchema,
   venueIdSchema,
@@ -30,6 +31,8 @@ function getErrorCode(error: unknown): string | undefined {
 export async function createVenue(
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const result = venueSchema.safeParse({
     slug: formData.get("slug"),
     name: formData.get("name"),
@@ -78,6 +81,8 @@ export async function createVenue(
 export async function updateVenue(
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const idResult = venueIdSchema.safeParse(formData.get("id"));
 
   const dataResult = venueSchema.safeParse({
@@ -141,6 +146,8 @@ export async function updateVenue(
 export async function deleteVenue(
   formData: FormData,
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const idResult = venueIdSchema.safeParse(formData.get("id"));
 
   if (!idResult.success) {

@@ -14,6 +14,22 @@ enum SeatStatus {
   ditinggalkan
 }
 
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  checkIns CheckIn[]
+}
+
 model Venue {
   id          Int      @id @default(autoincrement())
   slug        String   @unique
@@ -23,7 +39,7 @@ model Venue {
   description String
   createdAt   DateTime @default(now())
 
-  seats       Seat[]
+  seats Seat[]
 }
 
 model Seat {
@@ -33,22 +49,25 @@ model Seat {
   venueId   Int
   createdAt DateTime   @default(now())
 
-  venue     Venue      @relation(fields: [venueId], references: [id], onDelete: Restrict)
-  checkIns  CheckIn[]
+  venue    Venue     @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  checkIns CheckIn[]
 
   @@unique([venueId, number])
 }
 
 model CheckIn {
-  id          Int       @id @default(autoincrement())
-  name        String
-  email       String
-  seatId      Int
-  checkedInAt DateTime  @default(now())
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String
+  seatId       Int
+  userId       Int?
+  checkedInAt  DateTime  @default(now())
   checkedOutAt DateTime?
 
-  seat        Seat      @relation(fields: [seatId], references: [id], onDelete: Restrict)
+  seat Seat  @relation(fields: [seatId], references: [id], onDelete: Restrict)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([seatId, checkedInAt])
   @@index([email])
+  @@index([userId])
 }

@@ -1,11 +1,16 @@
+
 import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth/authorization";
 import SeatAdminClient from "./SeatAdminClient";
 
 export const instant = false;
 
 export default async function AdminSeatsPage() {
   await connection();
+
+  // Wajib memeriksa role sebelum mengambil data admin
+  await requireAdmin();
 
   const [venues, seats] = await Promise.all([
     prisma.venue.findMany({

@@ -1,12 +1,15 @@
 
 import { connection } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/auth/authorization";
 import VenueAdminClient from "./VenueAdminClient";
 
 export const instant = false;
 
 export default async function AdminVenuesPage() {
   await connection();
+
+  await requireAdmin();
 
   const venues = await prisma.venue.findMany({
     orderBy: {
